@@ -30,7 +30,7 @@ matrix:
           sources:
             - ubuntu-toolchain-r-test
 
-    - env: GCC_VERSION=5 BUILD_TYPE=Debug CPP_VERSION=14 ASAN=On
+    - env: GCC_VERSION=5 BUILD_TYPE=Debug CPP_VERSION=14 ASAN=Off
       os: linux
       addons: &gcc5
         apt:
@@ -40,7 +40,7 @@ matrix:
           sources:
             - ubuntu-toolchain-r-test
 
-    - env: GCC_VERSION=6 BUILD_TYPE=Debug CPP_VERSION=14 ASAN=On
+    - env: GCC_VERSION=6 BUILD_TYPE=Debug CPP_VERSION=14 ASAN=Off
       os: linux
       addons: &gcc6
         apt:
