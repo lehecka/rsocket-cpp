@@ -7,12 +7,11 @@
 #include <folly/portability/GFlags.h>
 
 #include "examples/util/ExampleSubscriber.h"
-#include "rsocket/RSocket.h"
-#include "rsocket/transports/TcpConnectionFactory.h"
+#include "src/RSocket.h"
+#include "src/transports/tcp/TcpConnectionFactory.h"
 
 #include "yarpl/Single.h"
 
-using namespace reactivesocket;
 using namespace rsocket_example;
 using namespace rsocket;
 using namespace yarpl;

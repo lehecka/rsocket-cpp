@@ -6,11 +6,10 @@
 #include <folly/init/Init.h>
 #include <folly/portability/GFlags.h>
 
-#include "rsocket/RSocket.h"
-#include "rsocket/transports/TcpConnectionAcceptor.h"
+#include "src/RSocket.h"
+#include "src/transports/tcp/TcpConnectionAcceptor.h"
 #include "yarpl/Single.h"
 
-using namespace reactivesocket;
 using namespace rsocket;
 using namespace yarpl;
 using namespace yarpl::single;

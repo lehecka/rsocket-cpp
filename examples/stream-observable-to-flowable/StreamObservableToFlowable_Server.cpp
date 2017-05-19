@@ -7,12 +7,11 @@
 #include <folly/init/Init.h>
 #include <folly/portability/GFlags.h>
 
-#include "rsocket/RSocket.h"
-#include "rsocket/transports/TcpConnectionAcceptor.h"
+#include "src/RSocket.h"
+#include "src/transports/tcp/TcpConnectionAcceptor.h"
 #include "yarpl/Observable.h"
 #include "yarpl/schedulers/ThreadScheduler.h"
 
-using reactivesocket::Payload;
 using namespace rsocket;
 using namespace yarpl;
 using namespace yarpl::flowable;
@@ -25,7 +24,7 @@ class PushStreamRequestHandler : public rsocket::RSocketResponder {
   /// Handles a new inbound Stream requested by the other end.
   yarpl::Reference<Flowable<Payload>> handleRequestStream(
       Payload request,
-      reactivesocket::StreamId streamId) override {
+      rsocket::StreamId streamId) override {
     std::cout << "PushStreamRequestHandler.handleRequestStream " << request
               << std::endl;
 
