@@ -46,6 +46,9 @@ class RSocketClient {
   // without waiting for transport to connect and ack)
   //  std::shared_ptr<RSocketRequester> fastConnect();
 
+  static std::shared_ptr<RSocketRequester> fromConnection(
+      std::pair<std::unique_ptr<DuplexConnection>, folly::EventBase*> connection);
+
  private:
   std::unique_ptr<ConnectionFactory> connectionFactory_;
   std::vector<std::shared_ptr<RSocketRequester>> rsockets_;

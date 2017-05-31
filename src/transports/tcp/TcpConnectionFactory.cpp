@@ -63,7 +63,6 @@ class ConnectCallback : public folly::AsyncSocket::ConnectCallback {
   folly::AsyncSocket::UniquePtr socket_;
   OnConnect onConnect_;
 };
-
 } // namespace
 
 TcpConnectionFactory::TcpConnectionFactory(folly::SocketAddress address)
@@ -74,8 +73,19 @@ TcpConnectionFactory::TcpConnectionFactory(folly::SocketAddress address)
 void TcpConnectionFactory::connect(OnConnect cb) {
   worker_.getEventBase()->runInEventBaseThread(
       [ this, fn = std::move(cb) ]() mutable {
-        new ConnectCallback(address_, std::move(fn));
+          new ConnectCallback(address_, std::move(fn));
       });
+}
+
+std::pair<std::unique_ptr<DuplexConnection>, folly::EventBase*>
+TcpConnectionFactory::createDuplexConnectionFromConnectedSocket(
+    folly::AsyncSocket::UniquePtr socket,
+    folly::EventBase& eventBase) {
+  auto connection = std::make_unique<TcpDuplexConnection>(
+      std::move(socket), eventBase, RSocketStats::noop());
+  auto framedConnection = std::make_unique<FramedDuplexConnection>(
+      std::move(connection), eventBase);
+  return std::make_pair(std::move(framedConnection), &eventBase);
 }
 
 TcpConnectionFactory::~TcpConnectionFactory() {

@@ -24,34 +24,42 @@ folly::Future<std::shared_ptr<RSocketRequester>> RSocketClient::connect() {
       std::make_shared<folly::Promise<std::shared_ptr<RSocketRequester>>>();
   auto future = promise->getFuture();
 
-  connectionFactory_->connect([this, promise = std::move(promise)](
+  connectionFactory_->connect([ this, promise = std::move(promise) ](
       std::unique_ptr<DuplexConnection> connection,
-      folly::EventBase& eventBase) mutable {
-    VLOG(3) << "onConnect received DuplexConnection";
-
-    auto rs = std::make_shared<RSocketStateMachine>(
-        eventBase,
-        // need to allow Responder being passed in optionally
-        std::make_shared<RSocketResponder>(),
-        // need to allow stats being passed in
-        RSocketStats::noop(),
-        // TODO need to optionally allow defining the keepalive timer
-        std::make_unique<FollyKeepaliveTimer>(
-            eventBase, std::chrono::milliseconds(5000)),
-        ReactiveSocketMode::CLIENT);
-
-    // TODO need to allow this being passed in
-    auto setupParameters =
-        SetupParameters("text/plain", "text/plain", Payload("meta", "data"));
-    rs->connectClientSendSetup(std::move(connection), std::move(setupParameters));
-
-    auto rsocket = RSocketRequester::create(std::move(rs), eventBase);
-    // store it so it lives as long as the RSocketClient
-    rsockets_.push_back(rsocket);
-    promise->setValue(rsocket);
+      folly::EventBase & eventBase) mutable {
+      VLOG(3) << "onConnect received DuplexConnection";
+      auto rsocket =
+          fromConnection(std::make_pair(std::move(connection), &eventBase));
+      // store it so it lives as long as the RSocketClient
+      rsockets_.push_back(rsocket);
+      promise->setValue(rsocket);
   });
 
   return future;
+}
+
+std::shared_ptr<RSocketRequester> RSocketClient::fromConnection(
+    std::pair<std::unique_ptr<DuplexConnection>, folly::EventBase*> connection) {
+  auto* eventBase = std::get<1>(connection);
+  auto duplexConnection = std::move(std::get<0>(connection));
+  auto rs = std::make_shared<RSocketStateMachine>(
+      *eventBase,
+      // TODO: need to allow Responder being passed in optionally
+      std::make_shared<RSocketResponder>(),
+      // TODO: need to allow stats being passed in
+      RSocketStats::noop(),
+      // TODO need to optionally allow defining the keepalive timer
+      std::make_unique<FollyKeepaliveTimer>(
+          *eventBase, std::chrono::milliseconds(5000)),
+      ReactiveSocketMode::CLIENT);
+
+  // TODO: need to allow this being passed in
+  auto setupParameters =
+      SetupParameters("text/plain", "text/plain", Payload("meta", "data"));
+  rs->connectClientSendSetup(
+      std::move(duplexConnection), std::move(setupParameters));
+
+  return RSocketRequester::create(std::move(rs), *eventBase);
 }
 
 RSocketClient::~RSocketClient() {
